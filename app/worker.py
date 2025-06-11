@@ -1,55 +1,33 @@
-import os
 from celery import Celery
-from redis import Redis
-from app.core.config import (
-    REDIS_HOST,
-    REDIS_PORT,
-    REDIS_DB,
-    CELERY_BROKER_URL
-)
-from app.services.pr_service import analyze_pr
+from app.core.config import CELERY_BROKER_URL
+import logging
 
-# Initialize Redis
-redis_client = Redis(
-    host=REDIS_HOST,
-    port=REDIS_PORT,
-    db=REDIS_DB,
-    decode_responses=True
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
+logger = logging.getLogger(__name__)
 
 # Initialize Celery
 celery_app = Celery('pr_analyzer', broker=CELERY_BROKER_URL)
 
-@celery_app.task(name='analyze_pr_task')
-def analyze_pr_task(repo: str, pr_number: str) -> dict:
-    """Celery task to analyze a PR."""
-    try:
-        # Run analysis
-        result = analyze_pr(repo, pr_number)
-        
-        # Store result in Redis
-        redis_client.set(
-            f"pr_analysis:{repo}:{pr_number}",
-            str(result["analysis"])
-        )
-        
-        return result
-        
-    except Exception as e:
-        error_result = {
-            "status": "error",
-            "error": str(e),
-            "analysis": {
-                "summary": "Unable to analyze PR",
-                "comments": ["An error occurred during analysis"],
-                "risk_level": "Unknown"
-            }
-        }
-        
-        # Store error in Redis
-        redis_client.set(
-            f"pr_analysis:{repo}:{pr_number}",
-            str(error_result["analysis"])
-        )
-        
-        return error_result 
+# Configure Celery
+celery_app.conf.update(
+    task_serializer='json',
+    accept_content=['json'],
+    result_serializer='json',
+    timezone='UTC',
+    enable_utc=True,
+    worker_log_format='[%(asctime)s: %(levelname)s/%(processName)s] %(message)s',
+    worker_task_log_format='[%(asctime)s: %(levelname)s/%(processName)s][%(task_name)s(%(task_id)s)] %(message)s',
+    worker_log_level='INFO',
+    worker_redirect_stdouts=False,  # This ensures prints are visible
+)
+
+# Import tasks to ensure they are registered
+celery_app.autodiscover_tasks(['app.tasks'])
+
+@celery_app.task(bind=True)
+def debug_task(self):
+    logger.info(f'Request: {self.request!r}') 

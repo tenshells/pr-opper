@@ -13,7 +13,19 @@ from datetime import datetime
 
 load_dotenv()
 
-app = Celery("worker", broker="redis://localhost:6379/0")
+celery_app = Celery('pr_analyzer', broker='redis://localhost:6379/0')
+
+celery_app.conf.update(
+    task_serializer='json',
+    accept_content=['json'],
+    result_serializer='json',
+    timezone='UTC',
+    enable_utc=True,
+)
+
+# Import tasks to ensure they are registered
+celery_app.autodiscover_tasks(['app.tasks'])
+
 r = redis.Redis(host="localhost", port=6379, db=1)
 
 # Create output directory if it doesn't exist
@@ -73,7 +85,7 @@ def process_llm_output(output: Any) -> Dict[str, Any]:
             "risk_level": "Unknown"
         }
 
-@app.task
+@celery_app.task
 def analyze_pr_task(repo, pr_number, token, task_id):
     print("starting celery job")
     llm = OllamaLLM(

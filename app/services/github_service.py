@@ -18,10 +18,10 @@ class GitHubService:
         try:
             # Get repository
             repo = self.github.get_repo(repo_name)
-            
+            print(f"repo is {repo}")
             # Get PR
             pr = repo.get_pull(pr_number)
-            
+            print(f"pr is {pr}")
             # Get PR details
             pr_data = {
                 "title": pr.title,
