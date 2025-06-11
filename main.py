@@ -16,7 +16,9 @@ class PRRequest(BaseModel):
 @app.post("/analyze")
 async def analyze_pr(pr: PRRequest):
     task_id = str(uuid.uuid4())
+    print("submitting task")
     analyze_pr_task.delay(pr.repo, pr.pr_number, pr.token, task_id)
+    print("submitted task")
     return {"task_id": task_id}
 
 

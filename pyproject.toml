@@ -8,6 +8,7 @@ dependencies = [
     "celery>=5.5.3",
     "fastapi>=0.115.12",
     "langchain>=0.3.25",
+    "langchain-community>=0.3.24",
     "langchain-openai>=0.3.21",
     "ollama>=0.5.1",
     "python-dotenv>=1.1.0",

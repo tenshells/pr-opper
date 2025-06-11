@@ -3,11 +3,13 @@ import redis
 import json
 import os
 from dotenv import load_dotenv
-from langchain_openai import ChatOpenAI
+from langchain_community.llms import Ollama
 from langchain.prompts import ChatPromptTemplate
 from langchain.output_parsers import PydanticOutputParser
 from pydantic import BaseModel, Field
 from typing import List
+from langchain.callbacks.manager import CallbackManager
+from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 
 load_dotenv()
 
@@ -22,14 +24,16 @@ class PRAnalysis(BaseModel):
 
 @app.task
 def analyze_pr_task(repo, pr_number, token, task_id):
-    # Initialize LangChain components
-    llm = ChatOpenAI(
-        model="gpt-4-turbo-preview",
-        temperature=0,
-        api_key=os.getenv("OPENAI_API_KEY")
+    print("starting celery job")
+    # Initialize LangChain components with Ollama
+    llm = Ollama(
+        model="llama3.2",  # Using CodeLlama for better code understanding
+        callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]),
+        temperature=0.1  # Lower temperature for more focused responses
     )
     
     parser = PydanticOutputParser(pydantic_object=PRAnalysis)
+    print("parser initialized")
     
     prompt = ChatPromptTemplate.from_messages([
         ("system", """You are an expert PR analyzer. Your task is to analyze pull requests and provide detailed feedback.
@@ -43,6 +47,7 @@ def analyze_pr_task(repo, pr_number, token, task_id):
     ])
     
     chain = prompt | llm | parser
+    print("chain initialized")
     
     try:
         # In a real implementation, you would fetch PR details using GitHub API
@@ -52,14 +57,20 @@ def analyze_pr_task(repo, pr_number, token, task_id):
             "pr_number": pr_number,
             "format_instructions": parser.get_format_instructions()
         })
+        print("chain invoked")
         
         # Convert to dict for Redis storage
         result_dict = analysis_result.dict()
+        print(f"result converted to dict, result: {result_dict}")
         r.set(task_id, json.dumps(result_dict), ex=3600)
-        
+        print("result set in redis")
     except Exception as e:
+        print(f"error in try block: {e}")
         error_result = {
             "error": str(e),
             "status": "failed"
         }
         r.set(task_id, json.dumps(error_result), ex=3600)
+        print("error result set in redis")
+    finally:
+        print("celery job completed")

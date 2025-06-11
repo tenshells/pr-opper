@@ -12,7 +12,8 @@ typing-extensions==4.14.0
 typing-inspection==0.4.1
 uvicorn==0.34.3
 langchain==0.1.12
-openai==1.14.0
+langchain-community==0.0.27
 python-dotenv==1.0.1
 celery==5.3.6
 redis==5.0.1
+ollama==0.5.1
