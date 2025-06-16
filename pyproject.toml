@@ -12,6 +12,7 @@ dependencies = [
     "langchain-ollama>=0.3.3",
     "langchain-openai>=0.3.21",
     "ollama>=0.5.1",
+    "pygithub>=2.6.1",
     "python-dotenv>=1.1.0",
     "redis>=6.2.0",
     "uvicorn>=0.34.3",
