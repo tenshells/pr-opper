@@ -22,4 +22,4 @@ async def get_status(task_id: str):
     return {"status": "processing"}
 
 def register_routes(app):
-    app.include_router(router) 
+    app.include_router(router)

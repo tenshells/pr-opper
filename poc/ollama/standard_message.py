@@ -2,7 +2,6 @@ from ollama import chat
 from ollama import ChatResponse
 
 
-
 response: ChatResponse = chat(model='llama3.2:latest', messages=[
   {
     'role': 'user',
@@ -11,7 +10,3 @@ response: ChatResponse = chat(model='llama3.2:latest', messages=[
 ])
 # or access fields directly from the response object
 print(response.message.content)
-
-import ollama
-all_available_models = ollama.list()
-print(all_available_models)
