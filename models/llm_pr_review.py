@@ -1,10 +1,10 @@
 from pydantic import BaseModel, Field
 from typing import List, Optional
 
-class CommentOnPR(BaseModel):
+class PRComment(BaseModel):
     """Represents a comment on a specific code change in a PR."""
     commit_sha: str = Field(
-        description="The SHA of the commit where this change was made"
+        description="The commit_sha of the commit for appropriate comment change was made"
     )
     position: int = Field(
         description="The position in the diff where this comment applies (line number)"
@@ -22,9 +22,9 @@ class CommentOnPR(BaseModel):
 
 class PRReview(BaseModel):
     """Represents a complete PR review with both main comments and file-specific comments."""
-    code_change_comments: List[CommentOnPR] = Field(
+    commit_comments: List[PRComment] = Field(
         description="List of detailed comments on specific code changes"
     )
-    main_comment: str = Field(
+    review_comment: str = Field(
         description="Overall summary comment about the PR"
         )

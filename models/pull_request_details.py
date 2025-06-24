@@ -2,7 +2,7 @@ from typing import override
 from pydantic import BaseModel
 from datetime import datetime
 
-class ShelFiles(BaseModel):
+class PurFiles(BaseModel):
     filename: str
     status: str
     additions: int
@@ -26,10 +26,10 @@ class ShelFiles(BaseModel):
 
 
 
-class ShelCommits(BaseModel):
+class PurCommits(BaseModel):
     commit_sha: str
     message: str
-    files: list[ShelFiles]
+    files: list[PurFiles]
 
     def __str__(self):
         """
@@ -37,15 +37,14 @@ class ShelCommits(BaseModel):
         Includes a summary of files changed within this commit.
         """
         num_files_changed = len(self.files)
-        file_summaries = "\n".join([str(file) for file in self.files])
         return (
-            f"  Commit SHA: {self.commit_sha}\n"
-            f"  Message: {self.message}\n"
-            f"  Files changed in this commit ({num_files_changed} total):\n{file_summaries}"
+            f"  {self.commit_sha[:5]}\t"
+            f"  {self.message}\t\t"
+            f"  ({num_files_changed})"
         )
 
 
-class PullRequestDetails(BaseModel):
+class PurPullRequest(BaseModel):
     title: str
     body: str | None
     state: str
@@ -55,7 +54,7 @@ class PullRequestDetails(BaseModel):
     closed_at: datetime | None
     merged_at: datetime | None
     base_ref: str
-    commits: list[ShelCommits]
+    commits: list[PurCommits]
 
     def __str__(self):
         """
@@ -76,7 +75,7 @@ class PullRequestDetails(BaseModel):
         ordered_commits_string = ""
         if self.commits:
             for i, commit in enumerate(self.commits):
-                ordered_commits_string += f"\nCommit {i+1} of {num_commits}:\n{str(commit)}"
+                ordered_commits_string += f"\n{i+1}/{num_commits}: \t{str(commit)}"
         else:
             ordered_commits_string = "\nNo commits found for this pull request."
 

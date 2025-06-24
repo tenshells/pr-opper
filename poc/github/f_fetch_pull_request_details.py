@@ -1,13 +1,13 @@
 import os
 from github import Auth, Github
 from dotenv import load_dotenv
-from models.pull_request_details import ShelCommits, ShelFiles, PullRequestDetails
+from models.pull_request_details import PurCommits, PurFiles, PurPullRequest
 
 load_dotenv()
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 
 
-def fetch_pull_request_details(repo, pr_number) -> PullRequestDetails:
+def fetch_pull_request_details(repo, pr_number) -> PurPullRequest:
     # using an access token
     auth = Auth.Token(GITHUB_TOKEN)
 
@@ -20,12 +20,12 @@ def fetch_pull_request_details(repo, pr_number) -> PullRequestDetails:
     for commit in pr.get_commits():
         files = []
         for file in commit.files:
-            files.append(ShelFiles(filename=file.filename, status=file.status, additions=file.additions, deletions=file.deletions, changes=file.changes, blob_url=file.blob_url, raw_url=file.raw_url, contents_url=file.contents_url, patch=file.patch))
+            files.append(PurFiles(filename=file.filename, status=file.status, additions=file.additions, deletions=file.deletions, changes=file.changes, blob_url=file.blob_url, raw_url=file.raw_url, contents_url=file.contents_url, patch=file.patch))
             # print("github file is ", file, "\n\n")
             # print("shel file is ", files, "\n\n")
             # return
-        commits.append(ShelCommits(commit_sha=commit.sha, message=commit.commit.message, files=files))
-    pull_request_details = PullRequestDetails(
+        commits.append(PurCommits(commit_sha=commit.sha, message=commit.commit.message, files=files))
+    pull_request_details = PurPullRequest(
         title=pr.title,
         body=pr.body,
         state=pr.state,
