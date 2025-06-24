@@ -14,17 +14,36 @@ class ShelFiles(BaseModel):
     patch: str
 
     def __str__(self):
-        return f"ShelFiles(filename={self.filename}\n, status={self.status}\n, additions={self.additions}\n, deletions={self.deletions}\n, changes={self.changes}\n, blob_url={self.blob_url}\n, raw_url={self.raw_url}\n, contents_url={self.contents_url}\n, patch={self.patch}\n)"
+        """
+        Provides a user-friendly, concise string representation of a file's changes.
+        """
+        return (
+            f"- File: {self.filename}\n"
+            f"  Status: {self.status}\n"
+            f"  Changes: {self.changes} lines ({self.additions} additions, {self.deletions} deletions)\n"
+            f"  View URL: {self.blob_url}"
+        )
+
+
 
 class ShelCommits(BaseModel):
-    sha: str
+    commit_sha: str
     message: str
     files: list[ShelFiles]
 
     def __str__(self):
-        files_string = "\n".join([str(file) for file in self.files])
-        return f"ShelCommits(sha={self.sha}\n, message={self.message}\n, files={files_string}\n)"
-    
+        """
+        Provides a user-friendly, concise string representation of a commit.
+        Includes a summary of files changed within this commit.
+        """
+        num_files_changed = len(self.files)
+        file_summaries = "\n".join([str(file) for file in self.files])
+        return (
+            f"  Commit SHA: {self.commit_sha}\n"
+            f"  Message: {self.message}\n"
+            f"  Files changed in this commit ({num_files_changed} total):\n{file_summaries}"
+        )
+
 
 class PullRequestDetails(BaseModel):
     title: str
@@ -39,5 +58,42 @@ class PullRequestDetails(BaseModel):
     commits: list[ShelCommits]
 
     def __str__(self):
-        commits_string = "\n".join([str(commit) for commit in self.commits])
-        return f"PullRequestDetails(title={self.title}\n, body={self.body}\n, state={self.state}\t, user={self.user}\t, created_at={self.created_at}\t, updated_at={self.updated_at}\t, closed_at={self.closed_at}\t, merged_at={self.merged_at}\t, base_ref={self.base_ref}\n, commits={commits_string}\n)"
+        """
+        Provides a user-friendly, verbose summary of the pull request,
+        including ordered dates, total commit count, and total files affected.
+        """
+        # Format dates for better readability
+        created_at_str = self.created_at.strftime("%Y-%m-%d %H:%M:%S")
+        updated_at_str = self.updated_at.strftime("%Y-%m-%d %H:%M:%S") if self.updated_at else "N/A"
+        closed_at_str = self.closed_at.strftime("%Y-%m-%d %H:%M:%S") if self.closed_at else "N/A"
+        merged_at_str = self.merged_at.strftime("%Y-%m-%d %H:%M:%S") if self.merged_at else "N/A"
+
+        # Count total commits and files affected across all commits
+        num_commits = len(self.commits)
+        total_files_affected = sum(len(commit.files) for commit in self.commits)
+
+        # Build the commits string with proper ordering and detail
+        ordered_commits_string = ""
+        if self.commits:
+            for i, commit in enumerate(self.commits):
+                ordered_commits_string += f"\nCommit {i+1} of {num_commits}:\n{str(commit)}"
+        else:
+            ordered_commits_string = "\nNo commits found for this pull request."
+
+        # Construct the final verbose string
+        return (
+            f"--- Pull Request Details ---\n"
+            f"Title: {self.title}\n"
+            f"Description: {self.body if self.body else 'No description provided.'}\n"
+            f"Status: {self.state.capitalize()}\n"
+            f"Author: {self.user}\n"
+            f"Created On: {created_at_str}\n"
+            f"Last Updated: {updated_at_str}\n"
+            f"Closed On: {closed_at_str}\n"
+            f"Merged On: {merged_at_str}\n"
+            f"Base Branch: {self.base_ref}\n"
+            f"----------------------------\n"
+            f"Summary: This pull request involves {num_commits} commits and a total of {total_files_affected} files affected across all commits.\n"
+            f"--- Commits Included ---\n{ordered_commits_string}\n"
+            f"----------------------------"
+        )

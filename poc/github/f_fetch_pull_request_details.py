@@ -7,7 +7,7 @@ load_dotenv()
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 
 
-def fetch_pull_request_details(repo, pr_number):
+def fetch_pull_request_details(repo, pr_number) -> PullRequestDetails:
     # using an access token
     auth = Auth.Token(GITHUB_TOKEN)
 
@@ -24,7 +24,7 @@ def fetch_pull_request_details(repo, pr_number):
             # print("github file is ", file, "\n\n")
             # print("shel file is ", files, "\n\n")
             # return
-        commits.append(ShelCommits(sha=commit.sha, message=commit.commit.message, files=files))
+        commits.append(ShelCommits(commit_sha=commit.sha, message=commit.commit.message, files=files))
     pull_request_details = PullRequestDetails(
         title=pr.title,
         body=pr.body,
