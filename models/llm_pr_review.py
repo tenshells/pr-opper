@@ -10,7 +10,7 @@ class CommentOnPR(BaseModel):
         description="The position in the diff where this comment applies (line number)"
     )
     path: str = Field(
-        description="The file path where the change was made"
+        description="The file path where the change was made, this can be fetched from the filename in the ShelCommit.ShelFile"
     )
     comment: str = Field(
         description="The actual review comment about this specific change"

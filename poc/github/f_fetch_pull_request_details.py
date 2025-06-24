@@ -1,7 +1,7 @@
 import os
 from github import Auth, Github
 from dotenv import load_dotenv
-from models.pull_request_details import ShelCommits, PullRequestDetails
+from models.pull_request_details import ShelCommits, ShelFiles, PullRequestDetails
 
 load_dotenv()
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
@@ -18,7 +18,13 @@ def fetch_pull_request_details(repo, pr_number):
 
     commits = []
     for commit in pr.get_commits():
-        commits.append(ShelCommits(sha=commit.sha, message=commit.commit.message))
+        files = []
+        for file in commit.files:
+            files.append(ShelFiles(filename=file.filename, status=file.status, additions=file.additions, deletions=file.deletions, changes=file.changes, blob_url=file.blob_url, raw_url=file.raw_url, contents_url=file.contents_url, patch=file.patch))
+            # print("github file is ", file, "\n\n")
+            # print("shel file is ", files, "\n\n")
+            # return
+        commits.append(ShelCommits(sha=commit.sha, message=commit.commit.message, files=files))
     pull_request_details = PullRequestDetails(
         title=pr.title,
         body=pr.body,
@@ -33,4 +39,4 @@ def fetch_pull_request_details(repo, pr_number):
     )
     return pull_request_details
 
-# print(fetch_pull_request_details("pr-opper", 2))
+# print(fetch_pull_request_details("pr-opper", 5))
