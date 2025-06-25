@@ -3,7 +3,7 @@ from poc.langchain.f_call_ollama_with_structure import call_ollama_with_structur
 from poc.github.f_fetch_pull_request_details import fetch_pull_request_details
 from poc.github.f_comment_on_pr import single_comment_on_pr
 from poc.github.f_review_comment_on_pr import review_comment_on_pr
-from models.llm_pr_review import PRReview
+from models.llm_pr_review import PurReview
 from models.pull_request_details import PurPullRequest
 from dotenv import load_dotenv
 
@@ -20,14 +20,14 @@ def pr_to_ollama_structured(repo, pr_number):
         print(f"pr details are {pull_request_details}\n\n")
         
         print("calling llm to review...\n\n")
-        raw_output = call_ollama_with_structure(pull_request_details, PRReview.model_json_schema(), "llama3.2:latest")
+        raw_output = call_ollama_with_structure(pull_request_details, PurReview.model_json_schema(), "llama3.2:latest")
         print("Validating json...")
         try:
-            review = PRReview.model_validate_json(raw_output)
+            review = PurReview.model_validate_json(raw_output)
             print("json validated successfully!")
         except Exception as e:
             print(f"could not validate output json... {e}")
-            review = PRReview()
+            review = PurReview()
         print(f"\n\nRaw Ollama output: {raw_output}\n\n")
         print(f"review is {review}\n\n")
 

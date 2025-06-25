@@ -1,11 +1,10 @@
 import os
 from github import Auth, Github
 from dotenv import load_dotenv
-from models.pull_request_details import PurCommits, PurFiles, PurPullRequest
+from models.pull_request_details import PurCommits, PurFiles, PurPullRequest, PurPullRequestMeta
 
 load_dotenv()
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
-
 
 def fetch_pull_request_details(repo, pr_number) -> PurPullRequest:
     # using an access token
@@ -25,7 +24,7 @@ def fetch_pull_request_details(repo, pr_number) -> PurPullRequest:
             # print("shel file is ", files, "\n\n")
             # return
         commits.append(PurCommits(commit_sha=commit.sha, message=commit.commit.message, files=files))
-    pull_request_details = PurPullRequest(
+    pr_meta = PurPullRequestMeta(
         title=pr.title,
         body=pr.body,
         state=pr.state,
@@ -34,7 +33,11 @@ def fetch_pull_request_details(repo, pr_number) -> PurPullRequest:
         updated_at=pr.updated_at,
         closed_at=pr.closed_at,
         merged_at=pr.merged_at,
-        base_ref=pr.base.ref,
+        base_ref=pr.base.ref
+    )
+    
+    pull_request_details = PurPullRequest(
+        meta=pr_meta,
         commits=commits
     )
     return pull_request_details
