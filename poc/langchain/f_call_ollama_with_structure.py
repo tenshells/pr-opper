@@ -5,7 +5,7 @@ from models.pull_request_details import PurPullRequest
 
 def call_ollama_with_structure(pull_request_details: PurPullRequest, 
                                output_json_schema, 
-                               model="codellama:latest"):
+                               model="llama3.2:latest"):
     prompt = PromptTemplate.from_template(
         """
         Analyze  {meta} and {commits}. These are formatted github pull request details.  
