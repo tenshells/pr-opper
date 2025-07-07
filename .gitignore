@@ -195,3 +195,7 @@ cython_debug/
 
 # llm outputs
 llm_output*.txt
+llm_input*.json
+llm_output*.json
+models/pull_request_details.py
+

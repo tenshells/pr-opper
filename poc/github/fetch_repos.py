@@ -6,15 +6,12 @@ from github import Auth
 from dotenv import load_dotenv
 
 load_dotenv()
-
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 
 # using an access token
 auth = Auth.Token(GITHUB_TOKEN)
 
 # First create a Github instance:
-
-# Public Web Github
 g = Github(auth=auth)
 
 # Then play with your Github objects:

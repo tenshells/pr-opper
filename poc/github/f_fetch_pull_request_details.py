@@ -1,0 +1,45 @@
+import os
+from github import Auth, Github
+from dotenv import load_dotenv
+from models.pull_request_details import PurCommits, PurFiles, PurPullRequest, PurPullRequestMeta
+
+load_dotenv()
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
+
+def fetch_pull_request_details(repo, pr_number) -> PurPullRequest:
+    # using an access token
+    auth = Auth.Token(GITHUB_TOKEN)
+
+    # First create a Github instance:
+    g = Github(auth=auth)
+    username = g.get_user().login
+    pr = g.get_repo(f"{username}/{repo}").get_pull(pr_number)
+
+    commits = []
+    for commit in pr.get_commits():
+        files = []
+        for file in commit.files:
+            files.append(PurFiles(filename=file.filename, status=file.status, additions=file.additions, deletions=file.deletions, changes=file.changes, blob_url=file.blob_url, raw_url=file.raw_url, contents_url=file.contents_url, patch=file.patch))
+            # print("github file is ", file, "\n\n")
+            # print("shel file is ", files, "\n\n")
+            # return
+        commits.append(PurCommits(commit_sha=commit.sha, message=commit.commit.message, files=files))
+    pr_meta = PurPullRequestMeta(
+        title=pr.title,
+        body=pr.body,
+        state=pr.state,
+        user=pr.user.login,
+        created_at=pr.created_at,
+        updated_at=pr.updated_at,
+        closed_at=pr.closed_at,
+        merged_at=pr.merged_at,
+        base_ref=pr.base.ref
+    )
+    
+    pull_request_details = PurPullRequest(
+        meta=pr_meta,
+        commits=commits
+    )
+    return pull_request_details
+
+# print(fetch_pull_request_details("pr-opper", 5))
